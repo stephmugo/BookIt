@@ -1,26 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up Form</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
-</head>
-<body>
+<%- include('partials/header.ejs'); -%>
+
+   
+
     <div class="container">
         <div class="forms-container">
             <div class="signin-signup">
-                <form action="" class="sign-in-form">
+                
+                <!-- Sign in form / Login-->
+                <form action="/users/login" class="sign-in-form">
                     <h2 class="title">Sign in</h2>
                     <div class="input-field">
                         <i class="bi bi-person"></i>
-                        <input type="text" placeholder="Username">
+                        <input type="email" placeholder="Email" id="email" name="email" required>
                     </div>
                     <div class="input-field">
                         <i class="bi bi-lock"></i>
-                        <input type="password" placeholder="password">
+                        <input type="password" placeholder="password" id="password" name="password" required>
                     </div>
                     <input type="submit" value="Login" class="btn solid">
                     
@@ -30,33 +25,35 @@
                             <i class="bi bi-google"></i>
                         </a>
                     </div>
+                    <a href="/users/register">register here</a>
                 </form>
-
-                <form action="" class="sign-up-form">
+                     
+                <%# Sign up form / Register form %>
+                <form action="/users/register" class="sign-up-form" method="post">
                     <h2 class="title">Sign up</h2>
                     <div class="input-field">
                         <i class="bi bi-person"></i>
-                        <input type="text" placeholder="First Name">
+                        <input type="text" placeholder="First Name" id="first_name" name="first_name" required>
                     </div>
                     <div class="input-field">
                         <i class="bi bi-person"></i>
-                        <input type="text" placeholder="Last Name">
+                        <input type="text" placeholder="Last Name" id="last_name" name="last_name" required>
                     </div>
                     <div class="input-field">
                         <i class="bi bi-envelope"></i>
-                        <input type="text" placeholder="Email">
+                        <input type="email" placeholder="Email" id="email" name="email" required >
                     </div>
                     <div class="input-field">
                         <i class="bi bi-telephone"></i>
-                        <input type="tel" placeholder="Phone Number">
+                        <input type="tel" placeholder="Phone Number" id="phone_number" name="phone_number" required>
                     </div>
                     <div class="input-field">
                         <i class="bi bi-lock"></i>
-                        <input type="password" placeholder="password">
+                        <input type="password" placeholder="password" id="password" name="password" required>
                     </div>
                     <div class="input-field">
                         <i class="bi bi-lock-fill"></i>
-                        <input type="password" placeholder="Confirm password">
+                        <input type="password" placeholder="Confirm password" id="password2" name="password2" required>
                     </div>
                     <input type="submit" value="Sign up" class="btn solid">
                     
@@ -109,8 +106,10 @@
             <div class="content">
                 <h3>New to BookMyExpert?</h3>
                 <p>Join our community of experts and clients</p>
+                <div class="sign-up-btns">
                 <button class="btn transparent" id="sign-up-personal-btn">Sign up Personal Account</button>
                 <button class="btn transparent" id="sign-up-business-btn">Sign up Business Account</button>
+                </div>
             </div>
 
            </div>
@@ -126,6 +125,4 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
-</body>
-</html>
+<%- include('partials/footer.ejs'); -%>
