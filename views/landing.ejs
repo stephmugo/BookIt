@@ -1,0 +1,61 @@
+<%- include('partials/header.ejs'); -%>
+
+    <h1>Home</h1>
+    
+    <a href="/users/login" class="btn">Login</a>
+    <br>
+    <a href="/users/register" class="btn">Sign up Personal Account</a>
+    <br>
+    <a href="/business/login" class="btn transparent">Login Business</a>
+    <br>
+    <a href="/business/register" class="btn transparent">Sign up Business</a>
+    <br>
+    <a href="/users/dashboard">users</a>
+    <br>
+
+    <a href="/admin/dashboard">Admins</a>
+
+    
+
+
+    <script> // Same script as the user login page.
+        document.addEventListener("DOMContentLoaded", function () {
+             const sign_in_btn = document.querySelector("#sign-in-btn");
+             const sign_up_personal_btn = document.querySelector("#sign-up-personal-btn"); 
+             const sign_up_business_btn = document.querySelector("#sign-up-business-btn");
+             const container = document.querySelector(".container");
+     
+             // Detect URL path and apply the corresponding class
+             if (window.location.pathname === "/business/register") {
+                 container.classList.add("sign-up-personal-mode");
+                 console.log("URL detected: /users/register -> Added class: sign-up-personal-mode");
+             } else if (window.location.pathname === "/users/register") {
+                 container.classList.add("sign-up-business-mode");
+                 console.log("URL detected: /business/register -> Added class: sign-up-business-mode");
+             }
+     
+             // Event listeners for button clicks
+             sign_up_personal_btn.addEventListener("click", () => { 
+                 container.classList.add("sign-up-mode");
+                 container.classList.remove("sign-up-business-mode");
+                 console.log("Clicked: Sign up for personal");
+                 window.history.pushState({}, "", "/users/register"); // Change URL without reloading
+             });
+     
+             sign_in_btn.addEventListener("click", () => {
+                 container.classList.remove("sign-up-mode", "sign-up-business-mode");
+                 console.log("Clicked: Sign in");
+                 window.history.pushState({}, "", "/login"); // Change URL
+             });
+     
+             sign_up_business_btn.addEventListener("click", () => {
+                 container.classList.add("sign-up-business-mode");
+                 container.classList.remove("sign-up-mode");
+                 console.log("Clicked: Sign up for business");
+                 window.history.pushState({}, "", "/business/register"); // Change URL without reloading
+             });
+         });
+     
+     </script>
+     </body>
+     </html>
