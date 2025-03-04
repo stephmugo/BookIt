@@ -7,6 +7,12 @@
       </ul>
 
       <ul>
+        <% if(messages.error_msg) { %>
+        <li><%= messages.error_msg %></li>
+        <% } %>
+      </ul>
+
+      <ul>
         <% if(typeof errors != 'undefined') { %>
              <% errors.forEach(error => { %>
                 <li><%= error.message %></li>
@@ -21,7 +27,7 @@
             <div class="signin-signup">
                 
                 <!-- Sign in form / Login-->
-                <form action="/users/login" class="sign-in-form">
+                <form action="/users/login" class="sign-in-form" method="post">
                     <h2 class="title">Sign in</h2>
                     <div class="input-field">
                         <i class="bi bi-person"></i>

@@ -1,0 +1,63 @@
+<header class="top-bar">
+    <div class="search-container">
+        <form action="/users/home" method="GET" class="search-form">
+            <div class="search-box">
+                <input 
+                    type="search" 
+                    name="q" 
+                    placeholder="Search for services..." 
+                    value="<%= locals.filters?.searchQuery || '' %>"
+                    aria-label="Search services"
+                >
+                <button type="submit" aria-label="Submit search">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Optional Notifications -->
+    <div class="notifications">
+        <i class="bi bi-bell notifications-icon"></i>
+        <span class="notifications-badge">3</span>
+    </div>
+    
+    <div class="user-profile">
+        <div class="user-info">
+            <p>Welcome, <%= user.first_name %></p>
+            <span class="user-role">Client</span>
+        </div>
+        <div class="profile-image">
+            <img 
+                src="<%= user.profile_image || '/img/profile.jpg' %>" 
+                alt="Profile picture"
+                loading="lazy"
+                onerror="this.src='/img/profile.jpg'"
+            >
+        </div>
+    </div>
+</header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Optional: Add any header-specific JavaScript functionality here
+        const searchForm = document.querySelector('.search-form');
+        const searchInput = searchForm.querySelector('input[type="search"]');
+
+        // Add focus effects for search input
+        searchInput.addEventListener('focus', () => {
+            searchForm.classList.add('focused');
+        });
+
+        searchInput.addEventListener('blur', () => {
+            searchForm.classList.remove('focused');
+        });
+
+        // Optional: Add notifications click handler
+        const notifications = document.querySelector('.notifications');
+        notifications.addEventListener('click', () => {
+            // Handle notifications click
+            console.log('Notifications clicked');
+        });
+    });
+</script> 

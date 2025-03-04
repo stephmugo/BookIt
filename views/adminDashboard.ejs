@@ -29,7 +29,7 @@
                     <i class="bi bi-grid-fill"></i>
                     <h3>Dashboard</h3>
                 </a>
-                <a href="">
+                <a href="/admin/business-model">
                     <i class="bi bi-building-fill-gear"></i>
                     <h3>Business Model</h3>
                 </a>
@@ -47,7 +47,7 @@
                     <h3>Settings</h3>
                 </a>
             
-                <a href="">
+                <a href="/logout">
                     <i class="bi bi-box-arrow-right"></i> 
                     <h3>Logout</h3>
                 </a>
@@ -64,11 +64,49 @@
                     <div class="info">
                         <p>Hello <%= user %></p>
                     </div>
-                    <div class="profile-photo"> <img src="/img/profile.jpg" alt=""></div>
-               </div>
+                    <div class="profile-photo">
+                        <img src="/img/profile.jpg" alt="">
+                    </div>
+                    <div class="profile-menu">
+                        <a href="/admin/business-profile">
+                            <i class="bi bi-person-gear"></i>
+                            Manage Profile
+                        </a>
+                    </div>
+                </div>
             </div>
             
         </main>
     </div>  
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarLinks = document.querySelectorAll('.sidebar a');
+            
+            // Set active class based on stored value or current path
+            const currentPath = window.location.pathname;
+            sidebarLinks.forEach((link, index) => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                    localStorage.setItem('activeLink', index);
+                }
+            });
+            
+            sidebarLinks.forEach((link, index) => {
+                link.addEventListener('click', function(e) {
+                    // Remove active class from all links
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                    
+                    // Store the active link index
+                    localStorage.setItem('activeLink', index);
+                    
+                    // Navigate to the link's href
+                    window.location.href = this.getAttribute('href');
+                });
+            });
+        });
+    </script>
 </body>
 </html>

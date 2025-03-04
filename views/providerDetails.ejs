@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= provider.name %> - Profile</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/providerDetails.css">
+</head>
+<body>
+    <div class="provider-details-container">
+        <nav class="top-nav">
+            <a href="/dashboard" class="back-btn"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+        </nav>
+
+        <div class="provider-header">
+            <div class="background-image">
+                <img src="/img/edu-img-1.jpg" alt="Business Environment">
+            </div>
+            <div class="provider-basic-info">
+                <h1><%= provider.name %></h1>
+                <p class="profession"><%= provider.profession %></p>
+                <div class="rating">
+                    <!-- Generate stars based on rating -->
+                    <span>(<%= provider.rating %>)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="provider-content">
+            <div class="main-info">
+                <section class="about">
+                    <h2>About</h2>
+                    <p><%= provider.about %></p>
+                </section>
+
+                <section class="services">
+                    <h2>Services Offered</h2>
+                    <div class="services-grid">
+                        <% provider.services.forEach(service => { %>
+                            <div class="service-card">
+                                <h3><%= service.name %></h3>
+                                <p><%= service.description %></p>
+                                <p class="price">KSH <%= service.price %></p>
+                            </div>
+                        <% }) %>
+                    </div>
+                </section>
+
+                <section class="reviews">
+                    <h2>Client Reviews</h2>
+                    <% provider.reviews.forEach(review => { %>
+                        <div class="review-card">
+                            <div class="reviewer-info">
+                                <h4><%= review.clientName %></h4>
+                                <div class="rating">
+                                    <!-- Generate stars based on rating -->
+                                    <span>(<%= review.rating %>)</span>
+                                </div>
+                            </div>
+                            <p><%= review.comment %></p>
+                            <span class="review-date"><%= review.date %></span>
+                        </div>
+                    <% }) %>
+                </section>
+            </div>
+
+            <div class="sidebar">
+                <div class="booking-card">
+                    <h3>Book an Appointment</h3>
+                    <form action="/book-appointment" method="POST">
+                        <input type="hidden" name="providerId" value="<%= provider._id %>">
+                        <div class="form-group">
+                            <label for="service">Select Service</label>
+                            <select name="service" id="service" required>
+                                <% provider.services.forEach(service => { %>
+                                    <option value="<%= service._id %>"><%= service.name %> - KSH <%= service.price %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Select Date</label>
+                            <input type="date" name="date" id="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="time">Select Time</label>
+                            <select name="time" id="time" required>
+                                <!-- Populate with available time slots -->
+                            </select>
+                        </div>
+                        <button type="submit" class="book-btn">Book Now</button>
+                    </form>
+                </div>
+
+                <div class="contact-card">
+                    <h3>Contact Information</h3>
+                    <p><i class="bi bi-geo-alt"></i> <%= provider.location %></p>
+                    <p><i class="bi bi-telephone"></i> <%= provider.phone %></p>
+                    <p><i class="bi bi-envelope"></i> <%= provider.email %></p>
+                    <button class="message-btn"><i class="bi bi-chat-dots"></i> Send Message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

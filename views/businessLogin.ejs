@@ -21,7 +21,7 @@
             <div class="signin-signup">
                 
                 <!-- Sign in form / Login-->
-                <form action="/business/login" class="sign-in-form">
+                <form action="/business/login" class="sign-in-form" method="post">
                     <h2 class="title">Sign in Admin</h2>
                     <div class="input-field">
                         <i class="bi bi-person"></i>
@@ -59,9 +59,10 @@
                     </div>
                     <div class="input-field">
                         <i class="bi bi-telephone"></i>
-                        <input type="tel" placeholder="Business Location" id="location" name="location" required>
+                        <input type="tel" placeholder="Contact Phone Number" id="telephone" name="telephone" required>
                     </div>
                     
+                    <%# 
                     <div class="input-field service-input-container">
                             <i class="bi bi-card-checklist"></i>
                             <input type="text" id="service-input" placeholder="   Add a service">
@@ -72,6 +73,8 @@
                              <!-- Hidden input to store services array -->
                          <input type="hidden" id="services" name="services">
                     </div>
+                     %>
+                     
                     <div class="input-field">
                         <i class="bi bi-lock"></i>
                         <input type="password" placeholder="password" id="password" name="password" required>

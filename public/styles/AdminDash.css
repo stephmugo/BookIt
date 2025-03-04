@@ -290,5 +290,312 @@ main{
 
 }
 
+/* Form Container Updates */
+.business-form-container {
+    padding: 2rem;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
 
+.business-form {
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-bottom: 2rem; /* Add space between forms */
+}
+
+/* Input Consistency */
+.business-details input,
+.business-details textarea,
+.service-inputs input,
+.service-entry input {
+    height: 48px; /* Consistent height for all inputs */
+    padding: 0.75rem;
+    border: 1px solid #dce0e4;
+    border-radius: 0.375rem;
+    font-size: 0.95rem;
+    transition: border-color 0.3s ease;
+    width: 100%;
+}
+
+.business-details textarea {
+    height: auto; /* Override height for textarea */
+    min-height: 120px;
+}
+
+/* Service Entry Layout */
+.service-entry {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    align-items: start;
+}
+
+.service-inputs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+/* Button Positioning */
+.form-section button[type="submit"] {
+    margin-top: 1.5rem;
+    width: auto;
+    min-width: 150px;
+}
+
+.add-service {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin-top: 1rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .service-entry {
+        grid-template-columns: 1fr;
+    }
+
+    .service-inputs {
+        grid-template-columns: 1fr;
+    }
+
+    .service-image-upload {
+        justify-self: center;
+    }
+}
+
+/* Form Section Visual Separation */
+.form-section {
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    border: 1px solid #e9ecef;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+/* Visual feedback for form separation */
+.business-form + .business-form {
+    border-top: 2px solid #e9ecef;
+    padding-top: 2rem;
+}
+
+/* Profile hover effect */
+.profile {
+    position: relative;
+}
+
+.profile-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--color-white);
+    padding: 1rem;
+    border-radius: var(--border-radius-1);
+    box-shadow: var(--box-shadow);
+    z-index: 100;
+}
+
+.profile:hover .profile-menu {
+    display: block;
+}
+
+/* ... existing code ... */
+
+/* Business Model Form Styling */
+.business-form-container {
+    padding: 2rem;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.business-form {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+}
+
+.form-section h3 {
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Image Upload Styling */
+.image-uploads {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.logo-upload, .background-upload, .service-image-upload {
+    position: relative;
+}
+
+.upload-placeholder {
+    cursor: pointer;
+    border: 2px dashed #dce0e4;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.upload-placeholder:hover {
+    border-color: #007bff;
+    background: #f8f9fa;
+}
+
+/* Logo specific styling */
+.logo-upload .upload-placeholder {
+    width: 150px;
+    height: 150px;
+}
+
+.logo-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 0.5rem;
+}
+
+/* Background image styling */
+.background-upload .upload-placeholder {
+    width: 300px;
+    height: 150px;
+}
+
+.background-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0.5rem;
+}
+
+/* Business Details Styling */
+.business-details {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.business-details input,
+.business-details textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #dce0e4;
+    border-radius: 0.375rem;
+    font-size: 0.95rem;
+    transition: border-color 0.3s ease;
+}
+
+.business-details textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.business-details input:focus,
+.business-details textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Services Section Styling */
+.service-entry {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.service-image-upload .upload-placeholder {
+    width: 120px;
+    height: 120px;
+}
+
+.service-image-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0.375rem;
+}
+
+.service-entry input {
+    padding: 0.75rem;
+    border: 1px solid #dce0e4;
+    border-radius: 0.375rem;
+    font-size: 0.95rem;
+    /*width: 256px ; */
+}
+
+.service-entry input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Button Styling */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.add-service {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.add-service:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.remove-service {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.remove-service:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .image-uploads {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .service-entry {
+        grid-template-columns: 1fr;
+    }
+
+    .service-image-upload {
+        justify-self: center;
+    }
+}
 

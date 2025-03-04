@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+    <title>My Bookmarks</title>
+</head>
+<body>
+    <%- include('partials/sidebar') %>
+    
+    <div class="main-content">
+        <header class="top-bar">
+            <h1>My Bookmarks</h1>
+            <!-- Include your header content -->
+        </header>
+
+        <div class="dashboard-container">
+            <% if (bookmarkedBusinesses.length === 0) { %>
+                <div class="empty-state">
+                    <i class="bi bi-bookmark"></i>
+                    <h2>No bookmarks yet</h2>
+                    <p>Businesses you bookmark will appear here</p>
+                    <a href="/users/home" class="primary-btn">Explore Businesses</a>
+                </div>
+            <% } else { %>
+                <div class="business-grid">
+                    <% bookmarkedBusinesses.forEach(business => { %>
+                        <div class="business-card">
+                            <div class="card-header">
+                                <img src="<%= business.background_image || '/img/default-business.jpg' %>" 
+                                     alt="<%= business.name %>" class="business-image">
+                                <button class="bookmark-btn active" data-id="<%= business.id %>">
+                                    <i class="bi bi-bookmark-fill"></i>
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="business-logo">
+                                    <img src="<%= business.logo || '/img/default-logo.jpg' %>" alt="Logo">
+                                </div>
+                                <h3 class="business-name"><%= business.name %></h3>
+                                <p class="business-industry"><%= business.industry %></p>
+                                <div class="business-rating">
+                                    <div class="stars">
+                                        <% for(let i = 1; i <= 5; i++) { %>
+                                            <i class="bi bi-star<%= i <= business.rating ? '-fill' : 
+                                                (i - 0.5 <= business.rating ? '-half' : '') %>"></i>
+                                        <% } %>
+                                    </div>
+                                    <span>(<%= business.review_count %>)</span>
+                                </div>
+                                <p class="business-location">
+                                    <i class="bi bi-geo-alt"></i>
+                                    <%= business.location %>
+                                </p>
+                                <a href="/business/<%= business.id %>" class="view-profile-btn">
+                                    View Profile
+                                </a>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script src="/js/bookmarks.js"></script>
+</body>
+</html> 

@@ -1,0 +1,52 @@
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo-container">
+            <img src="/img/logo2.jpg" alt="bookMyexpert logo">
+            <h2>bookMyexpert</h2>   
+        </div>
+        <button class="toggle-btn" id="toggle-sidebar">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="/users/home" class="nav-link <%= path === '/users/home' ? 'active' : '' %>">
+            <i class="bi bi-house-door-fill"></i>
+            <span>Home</span>
+        </a>
+        <a href="/users/appointments" class="nav-link <%= path === '/users/appointments' ? 'active' : '' %>">
+            <i class="bi bi-calendar-check"></i>
+            <span>Appointments</span>
+        </a>
+        <a href="/users/messages" class="nav-link <%= path === '/users/messages' ? 'active' : '' %>">
+            <i class="bi bi-chat-left-dots-fill"></i>
+            <span>Messages</span>
+            <span class="badge">26</span>
+        </a>
+        <a href="/users/bookmarks" class="nav-link <%= path === '/users/bookmarks' ? 'active' : '' %>">
+            <i class="bi bi-bookmarks-fill"></i>
+            <span>Bookmarks</span>
+        </a>
+        <a href="/users/settings" class="nav-link <%= path === '/users/settings' ? 'active' : '' %>">
+            <i class="bi bi-gear-fill"></i>
+            <span>Settings</span>
+        </a>
+        <a href="/logout" class="nav-link">
+            <i class="bi bi-box-arrow-right"></i> 
+            <span>Logout</span>
+        </a>
+    </nav>
+</aside>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sidebar Toggle
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            document.querySelector('.main-content').classList.toggle('expanded');
+        });
+    });
+</script> 

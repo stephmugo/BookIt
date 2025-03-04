@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+    <title><%= business.name %> - Profile</title>
+    <link rel="stylesheet" href="/styles/businessProfile.css">
+</head>
+<body>
+    <%- include('partials/sidebar') %>
+    
+    <main class="main-content">
+        <%- include('partials/profileHeader') %>
+        
+
+        <div class="profile-container">
+            <!-- Hero Section -->
+            <section class="hero-section" style="background-image: url('<%= business?.background_image ? `/uploads/${business.background_image}` : "/img/default-business.jpg" %>')">
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <div class="business-logo">
+                        <img 
+                            src="<%= business?.logo ? `/uploads/${business.logo}` : '/img/default-logo.jpg' %>" 
+                            alt="<%= business?.name %> logo"
+                            onerror="this.src='/img/default-logo.jpg'"
+                            loading="lazy"
+                        >
+                    </div>
+                    <div class="business-info">
+                        <h1><%= business.name %></h1>
+                        <p class="business-industry"><%= business.industry %></p>
+                        <div class="business-meta">
+                            <div class="rating">
+                                <div class="stars">
+                                    <% for(let i = 1; i <= 5; i++) { %>
+                                        <i class="bi bi-star<%= i <= business.rating ? '-fill' : 
+                                            (i - 0.5 <= business.rating ? '-half' : '') %>"></i>
+                                    <% } %>
+                                </div>
+                                <span>(<%= business.review_count %> reviews)</span>
+                            </div>
+                            <button class="bookmark-btn" data-id="<%= business.id %>">
+                                <i class="bi bi-bookmark<%= business.bookmarked ? '-fill' : '' %>"></i>
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About Section -->
+            <section class="about-section">
+                <h2>About Us</h2>
+                <p><%= business.description || 'No description available.' %></p>
+                <div class="contact-info">
+                    <div class="info-item" role="listitem">
+                        <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                        <span>
+                            <strong>Location:</strong><br>
+                            <%= business.location || 'Location not specified' %>
+                        </span>
+                    </div>
+                    <div class="info-item" role="listitem">
+                        <i class="bi bi-telephone" aria-hidden="true"></i>
+                        <span>
+                            <strong>Contact:</strong><br>
+                            <%= business.telephone || 'Phone number not available' %>
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Services Section -->
+            <section class="services-section">
+                <h2>Our Services</h2>
+                <div class="services-grid">
+                    <% business.services.forEach(service => { %>
+                        <div class="service-card">
+                            <div class="service-image">
+                                <img src="<%= service.service_image || '/img/default-service.jpg' %>" 
+                                     alt="<%= service.service %>">
+                            </div>
+                            <div class="service-details">
+                                <h3><%= service.service %></h3>
+                                <div class="service-meta">
+                                    <span class="duration">
+                                        <i class="bi bi-clock"></i>
+                                        <%= service.duration_minutes %> mins
+                                    </span>
+                                    <span class="price">$<%= service.price %></span>
+                                </div>
+                                <p class="staff-info">
+                                    <i class="bi bi-people"></i>
+                                    <%= service.staff_count %> staff available
+                                </p>
+                                <button class="book-btn" 
+                                        data-service-id="<%= service.id %>"
+                                        onclick="openBookingModal('<%= service.id %>')">
+                                    Book Appointment
+                                </button>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </section>
+        </div>
+
+        <!-- Booking Modal -->
+        <div id="bookingModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Book Appointment</h2>
+                <form id="bookingForm" class="booking-form">
+                    <input type="hidden" id="serviceId" name="serviceId">
+                    <div class="form-group">
+                        <label for="date">Select Date</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="time">Select Time</label>
+                        <select id="time" name="time" required>
+                            <!-- Time slots will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    <button type="submit" class="submit-btn">Confirm Booking</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/businessProfile.js"></script>
+</body>
+</html> 

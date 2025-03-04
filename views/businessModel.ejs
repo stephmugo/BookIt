@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Model | Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/businessModel.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <%- include('partials/adminNavbar.ejs') %>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar">
+                <%- include('partials/adminSidebar.ejs') %>
+            </div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Business Model Setup</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-primary save-all-btn">
+                            <i class="fas fa-save"></i> Save All Changes
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Alert Messages -->
+                <% if(typeof errors != 'undefined'){ %>
+                    <% errors.forEach(function(error) { %>
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <%= error.message %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+                    <% }) %>
+                <% } %>
+                
+                <% if(messages.success_msg) { %>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <%= messages.success_msg %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <% } %>
+                
+                <% if(messages.error_msg) { %>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <%= messages.error_msg %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <% } %>
+
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-tabs mb-4" id="businessModelTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile">Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="services-tab" data-bs-toggle="tab" href="#services">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="schedule-tab" data-bs-toggle="tab" href="#schedule">Schedule</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="delivery-tab" data-bs-toggle="tab" href="#delivery">Delivery Model</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="branches-tab" data-bs-toggle="tab" href="#branches">Branches</a>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- Profile Tab -->
+                    <div class="tab-pane fade show active" id="profile">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h3 class="card-title">Business Profile</h3>
+                                <form id="profileForm" action="/admin/save-business-profile" method="POST" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <!-- Business Logo Upload -->
+                                        <div class="col-md-6 mb-4">
+                                            <label class="form-label">Business Logo</label>
+                                            <div class="image-preview-container">
+                                                <div class="image-preview" id="logoPreview">
+                                                    <% if(user.business_logo) { %>
+                                                        <img src="<%= user.business_logo %>" alt="Business Logo">
+                                                    <% } else { %>
+                                                        <div class="upload-placeholder">
+                                                            <i class="fas fa-building"></i>
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                                <div class="image-upload-controls">
+                                                    <label for="businessLogo" class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-upload"></i> Upload Logo
+                                                    </label>
+                                                    <input type="file" id="businessLogo" name="businessLogo" class="d-none" accept="image/*">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">Recommended size: 200x200px, Max: 2MB</small>
+                                        </div>
+
+                                        <!-- Background Image Upload -->
+                                        <div class="col-md-6 mb-4">
+                                            <label class="form-label">Background Image</label>
+                                            <div class="image-preview-container">
+                                                <div class="image-preview bg-preview" id="backgroundPreview">
+                                                    <% if(user.background_image) { %>
+                                                        <img src="<%= user.background_image %>" alt="Background Image">
+                                                    <% } else { %>
+                                                        <div class="upload-placeholder">
+                                                            <i class="fas fa-image"></i>
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                                <div class="image-upload-controls">
+                                                    <label for="backgroundImage" class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-upload"></i> Upload Background
+                                                    </label>
+                                                    <input type="file" id="backgroundImage" name="backgroundImage" class="d-none" accept="image/*">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">Recommended size: 1200x400px, Max: 5MB</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Business Name -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="businessName" class="form-label">Business Name</label>
+                                            <input type="text" class="form-control" id="businessName" name="businessName" value="<%= user.name %>">
+                                        </div>
+
+                                        <!-- Phone Number -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="phone" class="form-label">Phone Number</label>
+                                            <input type="tel" class="form-control" id="phone" name="phone" value="<%= user.telephone || '' %>">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Location -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="location" class="form-label">Location</label>
+                                            <input type="text" class="form-control" id="location" name="location" value="<%= user.location || '' %>">
+                                        </div>
+
+                                        <!-- Industry -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="industry" class="form-label">Industry</label>
+                                            <input type="text" class="form-control" id="industry" name="industry" value="<%= user.industry || '' %>" readonly>
+                </div>
+            </div>
+
+                                    <!-- Description -->
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Business Description</label>
+                                        <textarea class="form-control" id="description" name="description" rows="4"><%= user.description || '' %></textarea>
+                                    </div>
+
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-primary">Save Profile</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Services Tab -->
+                    <div class="tab-pane fade" id="services">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h3 class="card-title mb-0">Services & Categories</h3>
+                                    <button class="btn btn-primary" id="addCategoryBtn">
+                                        <i class="fas fa-plus"></i> Add Category
+                                    </button>
+                            </div>
+                            
+                                <div id="categoriesContainer">
+                                    <!-- Categories will be loaded here -->
+                                    <div class="empty-state text-center py-5" id="noCategoriesMessage">
+                                        <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                                        <h5>No Categories Yet</h5>
+                                        <p class="text-muted">Start by adding your first service category</p>
+                                    </div>
+                                </div>
+
+                                <form id="servicesForm" action="/admin/save-services" method="POST" class="d-none">
+                                    <!-- Hidden form for submitting service data -->
+                                    <input type="hidden" id="categoriesData" name="categoriesData">
+                                    <input type="hidden" id="servicesData" name="servicesData">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Schedule Tab -->
+                    <div class="tab-pane fade" id="schedule">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h3 class="card-title mb-4">Business Hours</h3>
+                                
+                                <form id="scheduleForm" action="/admin/save-schedule" method="POST">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Day</th>
+                                                    <th>Open</th>
+                                                    <th>Close</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']; %>
+                                                <% days.forEach((day, index) => { %>
+                                                <tr>
+                                                    <td><%= day %></td>
+                                                    <td>
+                                                        <select name="openTime_<%= index %>" class="form-select time-select">
+                                                            <% for(let h = 0; h < 24; h++) { %>
+                                                                <% for(let m = 0; m < 60; m += 30) { %>
+                                                                    <% 
+                                                                        const hour = h.toString().padStart(2, '0');
+                                                                        const min = m.toString().padStart(2, '0');
+                                                                        const time = `${hour}:${min}`;
+                                                                    %>
+                                                                    <option value="<%= time %>"><%= time %></option>
+                                                                <% } %>
+                                                            <% } %>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <select name="closeTime_<%= index %>" class="form-select time-select">
+                                                            <% for(let h = 0; h < 24; h++) { %>
+                                                                <% for(let m = 0; m < 60; m += 30) { %>
+                                                                    <% 
+                                                                        const hour = h.toString().padStart(2, '0');
+                                                                        const min = m.toString().padStart(2, '0');
+                                                                        const time = `${hour}:${min}`;
+                                                                    %>
+                                                                    <option value="<%= time %>" <%= time === '18:00' ? 'selected' : '' %>><%= time %></option>
+                                                                <% } %>
+                                                            <% } %>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" name="isOpen_<%= index %>" id="isOpen_<%= index %>" checked>
+                                                            <label class="form-check-label text-success day-status" for="isOpen_<%= index %>">Open</label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="text-end mt-3">
+                                        <button type="submit" class="btn btn-primary">Save Schedule</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Model Tab -->
+                    <div class="tab-pane fade" id="delivery">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h3 class="card-title mb-4">Service Delivery Model</h3>
+                                
+                                <form id="deliveryForm" action="/admin/save-delivery-model" method="POST">
+                                    <div class="mb-4">
+                                        <label class="form-label">How do you deliver your services?</label>
+                                        <div class="service-type-selector">
+                                            <div class="row">
+                                                <div class="col-md-4 mb-3">
+                                                    <div class="service-type-option">
+                                                        <input type="radio" class="btn-check" name="serviceType" id="store-based" value="store-based" 
+                                                            <%= user.service_type === 'store-based' ? 'checked' : '' %>>
+                                                        <label class="btn btn-outline-primary w-100" for="store-based">
+                                                            <i class="fas fa-store mb-2"></i>
+                                                            <span>Store-based</span>
+                                                            <small class="d-block text-muted">Clients come to your location</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 mb-3">
+                                                    <div class="service-type-option">
+                                                        <input type="radio" class="btn-check" name="serviceType" id="mobile" value="mobile"
+                                                            <%= user.service_type === 'mobile' ? 'checked' : '' %>>
+                                                        <label class="btn btn-outline-primary w-100" for="mobile">
+                                                            <i class="fas fa-car mb-2"></i>
+                                                            <span>Mobile</span>
+                                                            <small class="d-block text-muted">You travel to clients</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 mb-3">
+                                                    <div class="service-type-option">
+                                                        <input type="radio" class="btn-check" name="serviceType" id="both" value="both"
+                                                            <%= user.service_type === 'both' ? 'checked' : '' %>>
+                                                        <label class="btn btn-outline-primary w-100" for="both">
+                                                            <i class="fas fa-exchange-alt mb-2"></i>
+                                                            <span>Both</span>
+                                                            <small class="d-block text-muted">Store & mobile services</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="mobileOptions" class="<%= (user.service_type === 'mobile' || user.service_type === 'both') ? '' : 'd-none' %>">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="serviceRadius" class="form-label">Service Radius (km)</label>
+                                                <input type="number" class="form-control" id="serviceRadius" name="serviceRadius" 
+                                                    value="<%= user.service_radius || 5 %>" min="1" max="100">
+                                                <small class="text-muted">Maximum distance you're willing to travel</small>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="travelFee" class="form-label">Travel Fee (KSH)</label>
+                                                <input type="number" class="form-control" id="travelFee" name="travelFee" 
+                                                    value="<%= user.travel_fee || 0 %>" min="0">
+                                                <small class="text-muted">Additional fee for travel (0 for no fee)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="minimumBookingAmount" class="form-label">Minimum Booking Amount (KSH)</label>
+                                            <input type="number" class="form-control" id="minimumBookingAmount" name="minimumBookingAmount" 
+                                                value="<%= user.minimum_booking_amount || 0 %>" min="0">
+                                            <small class="text-muted">Minimum spend required to book (0 for no minimum)</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="minimumNoticeHours" class="form-label">Minimum Notice (hours)</label>
+                                            <input type="number" class="form-control" id="minimumNoticeHours" name="minimumNoticeHours" 
+                                                value="<%= user.minimum_notice_hours || 1 %>" min="1" max="72">
+                                            <small class="text-muted">How much advance notice you need for bookings</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-end mt-3">
+                                        <button type="submit" class="btn btn-primary">Save Delivery Model</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Branches Tab -->
+                    <div class="tab-pane fade" id="branches">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h3 class="card-title mb-0">Business Branches</h3>
+                                    <button class="btn btn-primary" id="addBranchBtn">
+                                        <i class="fas fa-plus"></i> Add Branch
+                                    </button>
+                                </div>
+
+                                <div id="branchesContainer">
+                                    <!-- Branches will be loaded here -->
+                                    <div class="empty-state text-center py-5" id="noBranchesMessage">
+                                        <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                                        <h5>No Branches Added</h5>
+                                        <p class="text-muted">Your business locations will appear here</p>
+                                    </div>
+                                </div>
+
+                                <form id="branchesForm" action="/admin/save-branches" method="POST" class="d-none">
+                                    <!-- Hidden form for submitting branch data -->
+                                    <input type="hidden" id="branchesData" name="branchesData">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+                        </div>
+                    </div>
+
+    <!-- Category Modal -->
+    <div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="categoryModalTitle">Add Service Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="categoryForm">
+                        <input type="hidden" id="categoryId" value="">
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="categoryName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoryDescription" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="categoryDescription" rows="2"></textarea>
+                        </div>
+                </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveCategoryBtn">Save Category</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Modal -->
+    <div class="modal fade" id="serviceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="serviceModalTitle">Add Service</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="serviceForm">
+                        <input type="hidden" id="serviceId" value="">
+                        <input type="hidden" id="serviceCategoryId" value="">
+                        
+                        <div class="mb-3">
+                            <label for="serviceName" class="form-label">Service Name</label>
+                            <input type="text" class="form-control" id="serviceName" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="serviceDescription" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="serviceDescription" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="servicePrice" class="form-label">Price (KSH)</label>
+                                <input type="number" class="form-control" id="servicePrice" min="0" step="0.01" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="serviceDuration" class="form-label">Duration (minutes)</label>
+                                <input type="number" class="form-control" id="serviceDuration" min="5" step="5" value="30" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="serviceImages" class="form-label">Service Images</label>
+                            <div class="image-uploads-container" id="serviceImagesContainer">
+                                <div class="d-flex flex-wrap" id="imagePreviewsContainer">
+                                    <!-- Image previews will be added here -->
+                                    <div class="image-upload-box">
+                                        <label for="serviceImageUpload" class="h-100 w-100 d-flex flex-column align-items-center justify-content-center">
+                                            <i class="fas fa-plus"></i>
+                                            <span class="mt-1">Add Image</span>
+                                        </label>
+                                        <input type="file" id="serviceImageUpload" class="d-none" accept="image/*" multiple>
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="text-muted">Upload up to 5 images. First image will be the primary image.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="staffRequired" class="form-label">Staff Required</label>
+                            <input type="number" class="form-control" id="staffRequired" min="1" value="1" required>
+                            <small class="text-muted">Number of staff members needed to perform this service</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveServiceBtn">Save Service</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Branch Modal -->
+    <div class="modal fade" id="branchModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="branchModalTitle">Add Branch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="branchForm">
+                        <input type="hidden" id="branchId" value="">
+                        
+                        <div class="mb-3">
+                            <label for="branchName" class="form-label">Branch Name</label>
+                            <input type="text" class="form-control" id="branchName" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="branchAddress" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="branchAddress" required>
+                    </div>
+                        
+                        <div class="mb-3">
+                            <label for="branchTelephone" class="form-label">Telephone</label>
+                            <input type="tel" class="form-control" id="branchTelephone" required>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="isPrimaryBranch">
+                            <label class="form-check-label" for="isPrimaryBranch">Set as primary branch</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveBranchBtn">Save Branch</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/businessModel.js"></script>
+</body>
+</html> 

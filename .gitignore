@@ -1,6 +1,8 @@
 # Project- wide
 .DS_Store
 db.txt
+tutorail.js
+tutorial.css
  
 # Logs
 logs

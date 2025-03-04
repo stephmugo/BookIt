@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+    <title>Complete Your Business Profile</title>
+    <link rel="stylesheet" href="/styles/businessSetup.css">
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-header">
+            <h1>Complete Your Business Profile</h1>
+            <p>Let's make your business stand out! Fill in the details below to customize your profile.</p>
+        </div>
+        <form class="setup-form" action="/admin/setup" method="POST" enctype="multipart/form-data">
+            <!-- Progress Steps -->
+            <div class="setup-progress">
+                <div class="progress-step active" data-step="1">Basic Info</div>
+                <div class="progress-step" data-step="2">Images</div>
+                <div class="progress-step" data-step="3">Location</div>
+            </div>
+
+            <!-- Step 1: Basic Info -->
+            <div class="setup-step active" data-step="1">
+                <div class="form-group">
+                    <label for="businessName">Business Name</label>
+                    <input type="text" id="businessName" value="<%= business.name %>" disabled>
+                    <input type="hidden" id="businessId" name="businessId" value="<%= business.id %>">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Business Description</label>
+                    <textarea 
+                        id="description" 
+                        name="description" 
+                        rows="4" 
+                        placeholder="Tell customers about your business..."
+                        required><%= business.description || '' %></textarea>
+                    <div class="character-count">0/500</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="industry">Industry</label>
+                    <input type="text" id="industry" value="<%= business.industry %>" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="telephone">Contact Number</label>
+                    <input 
+                        type="tel" 
+                        id="telephone" 
+                        name="telephone" 
+                        value="<%= business.telephone || '' %>"
+                        pattern="[0-9]{10}"
+                        required>
+                    <small>Format: 10-digit number</small>
+                </div>
+            </div>
+
+            <!-- Step 2: Images -->
+            <div class="setup-step" data-step="2">
+                <div class="form-group">
+                    <label for="businessLogo">Business Logo</label>
+                    <div class="image-upload-container">
+                        <div class="preview-container" id="logoPreview">
+                            <img src="<%= business.business_logo ? `/uploads/${business.business_logo}` : '/img/default-logo.jpg' %>" 
+                                 alt="Logo preview">
+                        </div>
+                        <input 
+                            type="file" 
+                            id="businessLogo" 
+                            name="businessLogo"
+                            accept="image/*"
+                            class="file-input">
+                        <label for="businessLogo" class="upload-label">
+                            <i class="bi bi-cloud-upload"></i>
+                            Choose Logo
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="backgroundImage">Background Image</label>
+                    <div class="image-upload-container">
+                        <div class="preview-container" id="bgPreview">
+                            <img src="<%= business.background_image ? `/uploads/${business.background_image}` : '/img/default-business.jpg' %>" 
+                                 alt="Background preview">
+                        </div>
+                        <input 
+                            type="file" 
+                            id="backgroundImage" 
+                            name="backgroundImage"
+                            accept="image/*"
+                            class="file-input">
+                        <label for="backgroundImage" class="upload-label">
+                            <i class="bi bi-cloud-upload"></i>
+                            Choose Background
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Location -->
+
+            <div class="setup-step" data-step="3">
+                        <!-- Region selection form with dynamic options -->
+            <div class="form-group">
+                <label for="region_id">Region</label>
+                <select id="region_id" name="region_id" required class="form-control">
+                    <option value="">Select a region</option>
+                     <% regions.forEach(function(region) { %>
+                    <option value="<%= region.id %>" <%= business.region_id == region.id ? 'selected' : '' %>>
+                        <%= region.name %>
+                    </option>
+                    <% }); %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="sub_region_id">Sub-Region</label>
+                <select 
+                    id="sub_region_id" 
+                    name="sub_region_id" 
+                    required 
+                    class="form-control"
+                    data-current-id="<%= business.sub_region_id || '' %>"
+                >
+                    <option value="">Select a region first</option>
+                    <% if (subRegions && subRegions.length > 0) { %>
+                        <% subRegions.forEach(function(subRegion) { %>
+                            <option 
+                                value="<%= subRegion.id %>" 
+                                <%= business.sub_region_id == subRegion.id ? 'selected' : '' %>
+                            >
+                                <%= subRegion.name %>
+                            </option>
+                        <% }); %>
+                    <% } %>
+                </select>
+            </div>
+
+                <div class="form-group">
+                    <label for="location">Physical Location</label>
+                    <input 
+                        type="text" 
+                        id="location" 
+                        name="location" 
+                        value="<%= business.location || '' %>"
+                        placeholder="Eg. 2nd Floor, Plaza Mall, Kenyatta Avenue"
+                        required>
+                </div>
+
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="setup-navigation">
+                <button type="button" class="prev-btn" disabled>Previous</button>
+                <button type="button" class="next-btn">Next</button>
+                <button type="submit" class="submit-btn" style="display: none;">Complete Setup</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="/js/businessSetup.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const regionSelect = document.getElementById('region_id');
+    const subRegionSelect = document.getElementById('sub_region_id');
+    
+    // Store the current business sub_region_id in a data attribute or variable
+    const currentSubRegionId = subRegionSelect.dataset.currentId;
+    
+    // Function to load sub-regions based on selected region
+    function loadSubRegions() {
+        const regionId = regionSelect.value;
+        
+        // Clear current options
+        subRegionSelect.innerHTML = '<option value="">Select a sub-region</option>';
+        
+        // Disable sub-region select if no region is selected
+        if (!regionId) {
+            subRegionSelect.disabled = true;
+            return;
+        }
+        
+        // Enable sub-region select
+        subRegionSelect.disabled = false;
+        
+        // Fetch sub-regions for selected region
+        fetch(`/api/subregions/${regionId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Add options for each sub-region
+                data.forEach(subRegion => {
+                    const option = document.createElement('option');
+                    option.value = subRegion.id;
+                    option.textContent = subRegion.name;
+                    
+                    // Select if matches current business sub-region
+                    if (subRegion.id == currentSubRegionId) {
+                        option.selected = true;
+                    }
+                    
+                    subRegionSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading sub-regions:', error);
+            });
+    }
+    
+    // Load sub-regions when region changes
+    regionSelect.addEventListener('change', loadSubRegions);
+    
+    // Load sub-regions on page load if region is already selected
+    if (regionSelect.value) {
+        loadSubRegions();
+    }
+});
+    </script>
+    <script>
+            document.addEventListener('DOMContentLoaded', function() {
+            // Image preview handlers
+            function handleImagePreview(input, previewId) {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById(previewId).src = e.target.result;
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+            // Business logo preview
+            document.getElementById('businessLogo').addEventListener('change', function() {
+                handleImagePreview(this, 'logoPreview');
+            });
+
+            // Background image preview
+            document.getElementById('backgroundImage').addEventListener('change', function() {
+                handleImagePreview(this, 'bgPreview');
+            });
+        });
+    </script>
+</body>
+</html> 
