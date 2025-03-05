@@ -28,7 +28,7 @@
                 
                 <!-- Sign in form / Login-->
                 <form action="/users/login" class="sign-in-form" method="post">
-                    <h2 class="title">Sign in</h2>
+                    <h2 class="title">Personal Sign in</h2>
                     <div class="input-field">
                         <i class="bi bi-person"></i>
                         <input type="email" placeholder="Email" id="email" name="email" required>
@@ -36,6 +36,7 @@
                     <div class="input-field">
                         <i class="bi bi-lock"></i>
                         <input type="password" placeholder="password" id="password" name="password" required>
+                        <i class="bi bi-eye-slash password-toggle" data-target="password"></i>
                     </div>
                     <input type="submit" value="Login" class="btn solid">
                     
@@ -45,12 +46,12 @@
                             <i class="bi bi-google"></i>
                         </a>
                     </div>
-                    <a href="/users/register">register here</a>
+                    <a href="/users/register">Register here</a>
                 </form>
                      
-                        <%#Business Register form %>
+                        <%#Users Register form %>
                 <form action="/users/register" class="sign-up-business-form" method="post">
-                    <h2 class="title">Sign up</h2>
+                    <h2 class="title">Personal Sign up</h2>
                     <div class="input-field">
                         <i class="bi bi-person"></i>
                         <input type="text" placeholder="First Name" id="first_name" name="first_name" required>
@@ -70,10 +71,12 @@
                     <div class="input-field">
                         <i class="bi bi-lock"></i>
                         <input type="password" placeholder="password" id="password" name="password" required>
+                        <i class="bi bi-eye-slash password-toggle" data-target="password"></i>
                     </div>
                     <div class="input-field">
                         <i class="bi bi-lock-fill"></i>
                         <input type="password" placeholder="Confirm password" id="password2" name="password2" required>
+                        <i class="bi bi-eye-slash password-toggle" data-target="password2"></i>
                     </div>
                     <input type="submit" value="Sign up" class="btn solid">
                     
@@ -95,7 +98,7 @@
                 <h3>New to BookMyExpert?</h3>
                 <p>Join our community of experts and clients</p>
                 <div class="sign-up-btns">
-                <button class="btn transparent" id="sign-up-business-btn">Sign up Business Account</button>
+                <button class="btn transparent" id="sign-up-business-btn">Sign up Personal Account</button>
                 </div>
             </div>
 
@@ -145,6 +148,57 @@
              
          });
      
+     </script>
+
+     <script>
+     document.addEventListener('DOMContentLoaded', function() {
+         const toggles = document.querySelectorAll('.password-toggle');
+         
+         toggles.forEach(toggle => {
+             toggle.addEventListener('click', function() {
+                 // Get the target input field
+                 const targetId = this.getAttribute('data-target');
+                 const passwordInput = document.getElementById(targetId);
+                 
+                 // Toggle password visibility
+                 if (passwordInput.type === 'password') {
+                     passwordInput.type = 'text';
+                     this.classList.remove('bi-eye-slash');
+                     this.classList.add('bi-eye');
+                     this.classList.add('active');
+                 } else {
+                     passwordInput.type = 'password';
+                     this.classList.remove('bi-eye');
+                     this.classList.add('bi-eye-slash');
+                     this.classList.remove('active');
+                 }
+
+                 // Add ripple effect
+                 const ripple = document.createElement('div');
+                 ripple.classList.add('ripple');
+                 this.appendChild(ripple);
+                 
+                 // Remove ripple after animation
+                 setTimeout(() => ripple.remove(), 1000);
+             });
+         });
+
+         // Hide password when user switches tabs/windows
+         document.addEventListener('visibilitychange', function() {
+             if (document.visibilityState === 'hidden') {
+                 toggles.forEach(toggle => {
+                     const targetId = toggle.getAttribute('data-target');
+                     const passwordInput = document.getElementById(targetId);
+                     
+                     // Reset to password type
+                     passwordInput.type = 'password';
+                     toggle.classList.remove('bi-eye');
+                     toggle.classList.add('bi-eye-slash');
+                     toggle.classList.remove('active');
+                 });
+             }
+         });
+     });
      </script>
      </body>
      </html>

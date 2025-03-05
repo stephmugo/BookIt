@@ -1,0 +1,41 @@
+<aside>
+    <div class="top">
+        <div class="logo">
+            <div class="close" id="close-btn">
+                <i class="bi bi-x-lg"></i>
+            </div>
+            <img src="/img/logo2.jpg" alt="Website logo">
+            <h2>bookMyexpert</h2>   
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <a href="/admin/dashboard" class="<%= path === '/admin/dashboard' ? 'active' : '' %>">
+            <i class="bi bi-grid-fill"></i>
+            <h3>Dashboard</h3>
+        </a>
+        <a href="/admin/business-model" class="<%= path === '/admin/business-model' ? 'active' : '' %>">
+            <i class="bi bi-building-fill-gear"></i>
+            <h3>Business Model</h3>
+        </a>
+        <a href="/admin/appointments" class="<%= path === '/admin/appointments' ? 'active' : '' %>">
+            <i class="bi bi-grid-fill"></i> 
+            <h3>Appointments</h3>
+        </a>
+        <a href="/admin/messages" class="<%= path === '/admin/messages' ? 'active' : '' %>">
+            <i class="bi bi-chat-left-dots-fill"></i>
+            <h3>Messages</h3>
+            <% if (messageCount > 0) { %>
+                <span class="messageCount"><%= messageCount %></span>
+            <% } %>
+        </a>
+        <a href="/admin/settings" class="<%= path === '/admin/settings' ? 'active' : '' %>">
+            <i class="bi bi-gear-fill"></i> 
+            <h3>Settings</h3>
+        </a>
+        <a href="/logout">
+            <i class="bi bi-box-arrow-right"></i> 
+            <h3>Logout</h3>
+        </a>
+    </div>
+</aside> 

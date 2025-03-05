@@ -1,0 +1,20 @@
+<div class="upTop">
+    <div class="search">
+        <h1><%= title %></h1>
+    </div>
+
+    <div class="profile">
+        <div class="info">
+            <p>Hello <%= user.name || user %></p>
+        </div>
+        <div class="profile-photo">
+            <img src="<%= user.profile_image || '/img/profile.jpg' %>" alt="Profile photo">
+        </div>
+        <div class="profile-menu">
+            <a href="/admin/business-profile">
+                <i class="bi bi-person-gear"></i>
+                Manage Profile
+            </a>
+        </div>
+    </div>
+</div> 

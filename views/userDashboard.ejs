@@ -129,6 +129,44 @@
                 </div>
 
                         <div class="filter-section">
+                            <div class="filter-section-header">
+                                <h4>Region</h4>
+                            </div>
+                            <div class="filter-options">
+                                <select name="region_id" id="region-filter" class="form-select">
+                                    <option value="">All Regions</option>
+                                    <% filters.regions.forEach(region => { %>
+                                        <option value="<%= region.id %>" 
+                                                <%= filters.currentRegion == region.id ? 'selected' : '' %>>
+                                            <%= region.name %> (<%= region.business_count || 0 %>)
+                                        </option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-section">
+                            <div class="filter-section-header">
+                                <h4>Sub-Region</h4>
+                            </div>
+                            <div class="filter-options">
+                                <select name="sub_region_id" id="sub-region-filter" class="form-select">
+                                    <option value="">All Sub-Regions</option>
+                                    <% filters.subRegions.forEach(subRegion => { %>
+                                        <option value="<%= subRegion.id %>" 
+                                                data-region="<%= subRegion.region_id %>"
+                                                <%= filters.currentSubRegion == subRegion.id ? 'selected' : '' %>
+                                                class="sub-region-option <%= filters.currentRegion && 
+                                                                           subRegion.region_id != filters.currentRegion ? 
+                                                                           'd-none' : '' %>">
+                                            <%= subRegion.name %> (<%= subRegion.business_count || 0 %>)
+                                        </option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="filter-section">
                             <h4>Price Range</h4>
                             <div class="price-range">
                                 <input type="range" min="0" max="10000" step="100" class="price-slider">
@@ -184,6 +222,12 @@
                                 <p class="business-location">
                                     <i class="bi bi-geo-alt"></i>
                                     <%= business.location %>
+                                    <% if (business.region_name) { %>
+                                        - <%= business.region_name %>
+                                        <% if (business.sub_region_name) { %>
+                                            / <%= business.sub_region_name %>
+                                        <% } %>
+                                    <% } %>
                                 </p>
                                 <a href="/business/<%= business.id %>" class="view-profile-btn">
                                     View Profile
@@ -198,53 +242,93 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Sidebar Toggle
-            const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.getElementById('toggle-sidebar');
-            
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                document.querySelector('.main-content').classList.toggle('expanded');
-            });
+    // Sidebar Toggle
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggle-sidebar');
+    
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        document.querySelector('.main-content').classList.toggle('expanded');
+    });
 
-            // Bookmark functionality
-            document.querySelectorAll('.bookmark-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const businessId = btn.dataset.id;
-                    try {
-                        const response = await fetch('/api/toggle-bookmark', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ businessId })
-                        });
-                        
-                        if (response.ok) {
-                            const icon = btn.querySelector('i');
-                            icon.classList.toggle('bi-bookmark');
-                            icon.classList.toggle('bi-bookmark-fill');
-                        }
-                    } catch (error) {
-                        console.error('Error toggling bookmark:', error);
-                    }
+    // Bookmark functionality
+    document.querySelectorAll('.bookmark-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const businessId = btn.dataset.id;
+            try {
+                const response = await fetch('/api/toggle-bookmark', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ businessId })
                 });
-            });
-
-            // Filter functionality
-            const filterInputs = document.querySelectorAll('.filters-sidebar input');
-            filterInputs.forEach(input => {
-                input.addEventListener('change', () => {
-                    // Implement filter logic here
-                    applyFilters();
-                });
-            });
-
-            function applyFilters() {
-                // Implement your filter logic here
-                // This should make an API call or update the business cards based on selected filters
+                
+                if (response.ok) {
+                    const icon = btn.querySelector('i');
+                    icon.classList.toggle('bi-bookmark');
+                    icon.classList.toggle('bi-bookmark-fill');
+                }
+            } catch (error) {
+                console.error('Error toggling bookmark:', error);
             }
         });
+    });
+
+    // Filter functionality
+    const filterInputs = document.querySelectorAll('.filters-sidebar input, .filters-sidebar select');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            applyFilters();
+        });
+    });
+    
+    // Region and sub-region filtering
+    const regionFilter = document.getElementById('region-filter');
+    const subRegionFilter = document.getElementById('sub-region-filter');
+    
+    if (regionFilter && subRegionFilter) {
+        regionFilter.addEventListener('change', function() {
+            const selectedRegionId = this.value;
+            
+            // Reset sub-region selection
+            subRegionFilter.value = '';
+            
+            // Show/hide sub-regions based on selected region
+            document.querySelectorAll('.sub-region-option').forEach(option => {
+                if (!selectedRegionId || option.dataset.region === selectedRegionId) {
+                    option.classList.remove('d-none');
+                } else {
+                    option.classList.add('d-none');
+                }
+            });
+            
+            // Apply filters is called by the change event listener above
+        });
+    }
+    
+    // Clear all filters button
+    const clearFiltersBtn = document.querySelector('.clear-filters');
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', () => {
+            // Reset all inputs
+            document.querySelectorAll('.filters-sidebar input[type="checkbox"], .filters-sidebar input[type="radio"]').forEach(input => {
+                input.checked = false;
+            });
+            
+            document.querySelectorAll('.filters-sidebar select').forEach(select => {
+                select.value = '';
+            });
+            
+            // Submit the form to clear filters
+            applyFilters();
+        });
+    }
+
+    function applyFilters() {
+        document.getElementById('filters-form').submit();
+    }
+});
     </script>
 </body>
 </html>

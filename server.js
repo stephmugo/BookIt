@@ -54,10 +54,11 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-
-app.set('view engine', 'ejs');
+// Add these middleware configurations
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.set('view engine', 'ejs');
 app.use(express.static("public"));
 app.use(session({
     secret: 'secret',
@@ -309,7 +310,7 @@ app.get('/users/dashboard', checkAuthenticated, (req, res) => {
                  // Add this route after your other routes
 app.get('/users/home', checkAuthenticated, async (req, res) => {
     try {
-        // Base query for businesses with bookmark status
+        // Base query for businesses with bookmark status, region and sub-region info
         let query = `
             SELECT 
                 b.id,
@@ -321,9 +322,15 @@ app.get('/users/home', checkAuthenticated, async (req, res) => {
                 b.description,
                 b.rating,
                 b.review_count,
+                b.region_id,
+                b.sub_region_id,
+                r.name AS region_name,
+                sr.name AS sub_region_name,
                 COALESCE(bm.business_id IS NOT NULL, false) as bookmarked
             FROM businesses b
             LEFT JOIN bookmarks bm ON b.id = bm.business_id AND bm.user_id = $1
+            LEFT JOIN regions r ON b.region_id = r.id
+            LEFT JOIN sub_regions sr ON b.sub_region_id = sr.id
         `;
 
         const queryParams = [req.user.id];
@@ -353,6 +360,18 @@ app.get('/users/home', checkAuthenticated, async (req, res) => {
         if (req.query.location) {
             whereConditions.push(`b.location = $${queryParams.length + 1}`);
             queryParams.push(req.query.location);
+        }
+
+        // Handle region filter
+        if (req.query.region_id) {
+            whereConditions.push(`b.region_id = $${queryParams.length + 1}`);
+            queryParams.push(parseInt(req.query.region_id));
+        }
+
+        // Handle sub-region filter
+        if (req.query.sub_region_id) {
+            whereConditions.push(`b.sub_region_id = $${queryParams.length + 1}`);
+            queryParams.push(parseInt(req.query.sub_region_id));
         }
 
         // Handle rating filter
@@ -388,6 +407,31 @@ app.get('/users/home', checkAuthenticated, async (req, res) => {
 
         const locations = await pool.query('SELECT DISTINCT location FROM businesses WHERE location IS NOT NULL ORDER BY location');
 
+        // Get regions for filter options
+        const regions = await pool.query(`
+            SELECT 
+                r.id,
+                r.name,
+                COUNT(b.id) as business_count
+            FROM regions r
+            LEFT JOIN businesses b ON r.id = b.region_id
+            GROUP BY r.id, r.name
+            ORDER BY r.name
+        `);
+
+        // Get sub-regions for filter options (optional - can be loaded dynamically based on selected region)
+        const subRegions = await pool.query(`
+            SELECT 
+                sr.id,
+                sr.name,
+                sr.region_id,
+                COUNT(b.id) as business_count
+            FROM sub_regions sr
+            LEFT JOIN businesses b ON sr.id = b.sub_region_id
+            GROUP BY sr.id, sr.name, sr.region_id
+            ORDER BY sr.name
+        `);
+
         // Get user's bookmarks count
         const bookmarksCount = await pool.query(
             'SELECT COUNT(*) FROM bookmarks WHERE user_id = $1',
@@ -404,8 +448,12 @@ app.get('/users/home', checkAuthenticated, async (req, res) => {
             filters: {
                 industries: industries.rows,
                 locations: locations.rows,
+                regions: regions.rows,
+                subRegions: subRegions.rows,
                 currentIndustry: req.query.industry || [],
                 currentLocation: req.query.location,
+                currentRegion: req.query.region_id,
+                currentSubRegion: req.query.sub_region_id,
                 currentRating: req.query.rating,
                 searchQuery: req.query.q
             },
@@ -577,117 +625,19 @@ app.get('/api/subregions/:regionId', async (req, res) => {
 app.post('/admin/setup', upload.fields([
     { name: 'businessLogo', maxCount: 1 },
     { name: 'backgroundImage', maxCount: 1 }
- ]), async (req, res) => {
+]), async (req, res) => {
     
         try {
              // Check if user is logged in and is a business
             if (!req.isAuthenticated() || req.user.type !== 'business') {
                     req.flash('error_msg', 'Please log in to access this page');
-                    return res.redirect('/business/login');
-                 }
-                        
+            return res.redirect('/business/login');
+        }
+
             const businessId = req.user.id;
             console.log(req.body);
             console.log(req.files);
             console.log('Updating business profile');
-                        
-            // Get file paths (or null if no file uploaded)
-            const businessLogo = req.files.businessLogo ? 
-            '/uploads/' + req.files.businessLogo[0].filename : null;
-                        
-            const backgroundImage = req.files.backgroundImage ? 
-            '/uploads/' + req.files.backgroundImage[0].filename : null;
-                        
-            // Query current business data to check existing images
-            const currentBusiness = await pool.query(
-                'SELECT business_logo, background_image FROM businesses WHERE id = $1',
-                 [businessId]
-            );
-                        
-            // Check if there are existing images that should be replaced
-            if (currentBusiness.rows.length > 0) {
-                const currentData = currentBusiness.rows[0];
-                            
-                // Delete old business logo if a new one was uploaded
-                if (businessLogo && currentData.business_logo) {
-                    try {
-                        const oldLogoPath = path.join(__dirname, 'public', currentData.business_logo);
-                        if (fs.existsSync(oldLogoPath)) {
-                            fs.unlinkSync(oldLogoPath);
-                        }
-                    } catch (err) {
-                        console.error('Error deleting old logo file:', err);
-                    }
-                }
-                            
-                 // Delete old background image if a new one was uploaded
-                if (backgroundImage && currentData.background_image) {
-                    try {
-                        const oldBgPath = path.join(__dirname, 'public', currentData.background_image);
-                        if (fs.existsSync(oldBgPath)) {
-                            fs.unlinkSync(oldBgPath);
-                        }
-                    } catch (err) {
-                        console.error('Error deleting old background file:', err);
-                    }
-                }
-            }
-            // Extract form data
-            const { description, telephone, region_id, sub_region_id, location } = req.body;
-                        
-            console.log(req.user.id);
-            console.log('Updating business profile');
-                        
-            // Update the business record
-            await pool.query(
-                `UPDATE businesses 
-                SET region_id = $1, 
-                sub_region_id = $2, 
-                location = $3, 
-                description = $4,
-                telephone = $5,
-                business_logo = $6,
-                background_image = $7
-                WHERE id = $8`,
-                [region_id, sub_region_id, location, description, telephone, businessLogo, backgroundImage, req.user.id]
-            );
-                        
-            req.flash('success_msg', 'Business profile completed successfully!');
-            res.redirect('/admin/dashboard');
-                        
-        } catch (err) {
-            console.error('Error updating business:', err);
-            req.flash('error_msg', 'Failed to update business profile');
-            res.redirect('/admin/setup');
-        }
-    });
-
-app.get('/admin/dashboard', checkBusinessAuthenticated, (req, res) => {
-    res.render('adminDashboard', { user: req.user });
-  });
-  
-app.get('/admin/business-model', checkBusinessAuthenticated, (req, res) => {
-    console.log(req.user);
-    res.render('businessModel', { user: req.user });
-});
-
-//==================================SAVE BUSINESS MODEL=========================
-
-app.post('/admin/save-business-model', upload.fields([
-    { name: 'businessLogo', maxCount: 1 },
-    { name: 'backgroundImage', maxCount: 1 }
-]), async (req, res) => {
-    try {
-        // Make sure user is logged in and is a business
-        if (!req.session.user) {
-            req.flash('error_msg', 'Please log in first');
-            return res.redirect('/business/login');
-        }
-
-        const businessId = req.session.user.id;
-        
-        // Extract form data
-        const { description, telephone } = req.body;
         
         // Get file paths (or null if no file uploaded)
         const businessLogo = req.files.businessLogo ? 
@@ -730,33 +680,110 @@ app.post('/admin/save-business-model', upload.fields([
                 }
             }
         }
-        
-        // Update the business record with new data
-        // Only update the fields that were provided (using COALESCE to keep existing values if not provided)
-        await pool.query(
-            `UPDATE businesses 
-             SET business_logo = COALESCE($1, business_logo),
-                 background_image = COALESCE($2, background_image),
-                 description = COALESCE($3, description),
-                 telephone = COALESCE($4, telephone)
-             WHERE id = $5`,
-            [
-                businessLogo, 
-                backgroundImage, 
-                description, 
-                telephone,
-                businessId
-            ]
+            // Extract form data
+            const { description, telephone, region_id, sub_region_id, location } = req.body;
+                        
+            console.log(req.user.id);
+            console.log('Updating business profile');
+                        
+            // Update the business record
+            await pool.query(
+                `UPDATE businesses 
+                SET region_id = $1, 
+                sub_region_id = $2, 
+                location = $3, 
+                description = $4,
+                telephone = $5,
+                business_logo = $6,
+                background_image = $7
+                WHERE id = $8`,
+                [region_id, sub_region_id, location, description, telephone, businessLogo, backgroundImage, req.user.id]
+            );
+                        
+            req.flash('success_msg', 'Business profile completed successfully!');
+            res.redirect('/admin/dashboard');
+                        
+        } catch (err) {
+            console.error('Error updating business:', err);
+            req.flash('error_msg', 'Failed to update business profile');
+            res.redirect('/admin/setup');
+        }
+    });
+
+app.get('/admin/dashboard', checkBusinessAuthenticated, (req, res) => {
+    res.render('adminDashboard', { user: req.user });
+  });
+  
+app.get('/admin/business-model', checkBusinessAuthenticated, async (req, res) => {
+    try {
+        if (!req.isAuthenticated() || req.user.type !== 'business') {
+            req.flash('error_msg', 'Please log in to access this page');
+            return res.redirect('/business/login');
+        }
+
+        const businessId = req.user.id;
+
+        // Fetch all necessary data
+        const categories = await pool.query(
+            'SELECT * FROM service_categories WHERE business_id = $1 ORDER BY created_at',
+            [businessId]
         );
-        
-        req.flash('success_msg', 'Business profile updated successfully');
-        res.redirect('/admin/dashboard');
+
+        const branches = await pool.query(
+            'SELECT * FROM branches WHERE business_id = $1 ORDER BY is_primary DESC, created_at',
+            [businessId]
+        );
+
+        const businessHours = await pool.query(
+            'SELECT * FROM business_hours WHERE business_id = $1 ORDER BY day_of_week',
+            [businessId]
+        );
+
+        const business = await pool.query(
+            'SELECT service_type, service_radius, travel_fee, minimum_booking_amount FROM businesses WHERE id = $1',
+            [businessId]
+        );
+
+        // Add this query to fetch staff members
+        const staffMembers = await pool.query(
+            'SELECT * FROM staff WHERE business_id = $1 ORDER BY created_at',
+            [businessId]
+        );
+
+        res.render('businessModel', {
+            categories: categories.rows,
+            branches: branches.rows,
+            businessHours: businessHours.rows,
+            business: business.rows[0],
+            user: req.user,
+            path: req.path,
+            title: 'Business Model Setup',
+            staffMembers: staffMembers.rows
+        });
     } catch (error) {
-        console.error('Error saving business model:', error);
-        req.flash('error_msg', 'Error updating business profile');
-        res.redirect('/admin/business-model');
+        console.error('Error fetching business model data:', error);
+        req.flash('error_msg', 'Error loading business model data');
+        res.redirect('/admin/dashboard');
     }
 });
+
+// Helper function to get unread message count
+/*async function getUnreadMessageCount(businessId) {
+    try {
+        const result = await pool.query(
+            'SELECT COUNT(*) FROM messages WHERE business_id = $1 AND read = false',
+            [businessId]
+        );
+        return parseInt(result.rows[0].count);
+    } catch (error) {
+        console.error('Error getting unread message count:', error);
+        return 0;
+    }
+} */
+
+//==================================SAVE BUSINESS MODEL=========================
+
+
 
 
 // Route for saving business profile
@@ -816,7 +843,7 @@ app.post('/admin/save-business-profile', upload.fields([
              WHERE id = $7`,
             [businessName, businessLogo, backgroundImage, description, location, phone, businessId]
         );
-
+        
         req.flash('success_msg', 'Business profile updated successfully');
         res.redirect('/admin/business-model');
     } catch (error) {
@@ -930,11 +957,296 @@ app.get('/business/:id', checkAuthenticated, async (req, res) => {
     }
 });
 
+// Add service category
+app.post('/admin/add-category', async (req, res) => {
+    try {
+        const { categoryName, categoryDescription } = req.body;
+        const businessId = req.user.id;
+        console.log(req.body);
 
+        const result = await pool.query(
+            'INSERT INTO service_categories (business_id, name, description) VALUES ($1, $2, $3) RETURNING *',
+            [businessId, categoryName, categoryDescription]
+        );
 
+        res.json({ success: true, category: result.rows[0] });
+    } catch (error) {
+        console.error('Error adding category:', error);
+        res.status(500).json({ success: false, message: 'Error adding category' });
+    }
+});
 
+// Add service with images
+app.post('/admin/add-service', upload.array('serviceImages', 5), async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        console.log(req.body);
 
+        const { categoryId, serviceName, serviceDescription, price, duration, staffIds } = req.body;
+        const businessId = req.user.id;
 
+        // Insert service
+        const serviceResult = await client.query(
+            `INSERT INTO business_services 
+            (business_id, category_id, name, description, price, duration_minutes) 
+            VALUES ($1, $2, $3, $4, $5, $6) 
+            RETURNING id`,
+            [businessId, categoryId, serviceName, serviceDescription, price, duration]
+        );
+
+        const serviceId = serviceResult.rows[0].id;
+        console.log(req.files);
+
+        // Handle image uploads
+        if (req.files && req.files.length > 0) {
+            const imageValues = req.files.map((file, index) => ({
+                serviceId,
+                imagePath: '/uploads/services/' + file.filename,
+                isPrimary: index === 0 // First image is primary
+            }));
+
+            // Insert all images
+            for (const image of imageValues) {
+                await client.query(
+                    'INSERT INTO service_images (service_id, image_path, is_primary) VALUES ($1, $2, $3)',
+                    [image.serviceId, image.imagePath, image.isPrimary]
+                );
+            }
+        }
+
+        // Insert staff-service relationships
+        const staffServiceQuery = `
+            INSERT INTO staff_services (service_id, staff_id) 
+            VALUES ($1, $2)
+        `;
+        
+        // Ensure staffIds is an array
+        const staffIdArray = Array.isArray(req.body.staffIds) 
+            ? req.body.staffIds 
+            : [req.body.staffIds];
+
+        for (const staffId of staffIdArray) {
+            await client.query(staffServiceQuery, [serviceId, staffId]);
+        }
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Service added successfully' });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error adding service:', error);
+        res.status(500).json({ success: false, message: 'Error adding service' });
+    } finally {
+        client.release();
+    }
+});
+
+// Update business hours
+app.post('/admin/update-hours', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const businessId = req.user.id;
+        const { days } = req.body;
+        console.log(req.body);
+
+        // Delete existing hours
+        await client.query('DELETE FROM business_hours WHERE business_id = $1', [businessId]);
+
+        // Insert new hours
+        for (let i = 0; i < days.length; i++) {
+            const day = days[i];
+            await client.query(
+                `INSERT INTO business_hours 
+                (business_id, day_of_week, open_time, close_time, is_open) 
+                VALUES ($1, $2, $3, $4, $5)`,
+                [businessId, i, day.openTime, day.closeTime, day.isOpen || false]
+            );
+        }
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Business hours updated successfully' });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error updating business hours:', error);
+        res.status(500).json({ success: false, message: 'Error updating business hours' });
+    } finally {
+        client.release();
+    }
+});
+
+// Update delivery options
+app.post('/admin/update-delivery', async (req, res) => {
+    try {
+        const { serviceType } = req.body;
+        const businessId = req.user.id;
+
+        await pool.query(
+            `UPDATE businesses 
+            SET service_type = $1 
+            WHERE id = $2`,
+            [serviceType, businessId]
+        );
+
+        res.json({ success: true, message: 'Delivery options updated successfully' });
+    } catch (error) {
+        console.error('Error updating delivery options:', error);
+        res.status(500).json({ success: false, message: 'Error updating delivery options' });
+    }
+});
+
+// Add branch
+app.post('/admin/add-branch', checkBusinessAuthenticated, async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        const { branchName, address, telephone, isPrimary } = req.body;
+        const businessId = req.user.id;
+
+        // If this branch is primary, unset any existing primary branch
+        if (isPrimary) {
+            await client.query(
+                'UPDATE branches SET is_primary = false WHERE business_id = $1',
+                [businessId]
+            );
+        }
+
+        const result = await client.query(
+            `INSERT INTO branches 
+            (business_id, name, address, telephone, is_primary) 
+            VALUES ($1, $2, $3, $4, $5) 
+            RETURNING *`,
+            [businessId, branchName, address, telephone, isPrimary || false]
+        );
+
+        await client.query('COMMIT');
+        res.json({ success: true, branch: result.rows[0] });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error adding branch:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error adding branch',
+            error: error.message 
+        });
+    } finally {
+        client.release();
+    }
+});
+
+// Delete service
+app.delete('/admin/service/:id', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const serviceId = req.params.id;
+        const businessId = req.user.id;
+
+        // Verify ownership
+        const service = await client.query(
+            'SELECT * FROM business_services WHERE id = $1 AND business_id = $2',
+            [serviceId, businessId]
+        );
+
+        if (service.rows.length === 0) {
+            throw new Error('Service not found or unauthorized');
+        }
+
+        // Delete associated images from filesystem
+        const images = await client.query(
+            'SELECT image_path FROM service_images WHERE service_id = $1',
+            [serviceId]
+        );
+
+        for (const image of images.rows) {
+            const imagePath = path.join(__dirname, 'public', image.image_path);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
+
+        // Delete service (cascades to service_images due to foreign key)
+        await client.query('DELETE FROM business_services WHERE id = $1', [serviceId]);
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Service deleted successfully' });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error deleting service:', error);
+        res.status(500).json({ success: false, message: 'Error deleting service' });
+    } finally {
+        client.release();
+    }
+});
+
+// Route to save business schedule
+app.post('/admin/save-schedule', checkBusinessAuthenticated, async (req, res) => {
+    try {
+        // Start transaction
+        const client = await pool.connect();
+        
+        try {
+            await client.query('BEGIN');
+            
+            // Delete existing business hours
+            await client.query(
+                'DELETE FROM business_hours WHERE business_id = $1',
+                [req.user.id]
+            );
+            
+            // Insert new business hours
+            for (let i = 0; i < 7; i++) {
+                const openTime = req.body[`openTime_${i}`];
+                const closeTime = req.body[`closeTime_${i}`];
+                const isOpen = req.body[`isOpen_${i}`] === 'on';
+                
+                if (openTime && closeTime) {
+                    await client.query(
+                        `INSERT INTO business_hours 
+                         (business_id, day_of_week, open_time, close_time, is_open) 
+                         VALUES ($1, $2, $3, $4, $5)`,
+                        [req.user.id, i, openTime, closeTime, isOpen]
+                    );
+                }
+            }
+            
+            await client.query('COMMIT');
+            req.flash("success_msg", "Business schedule updated successfully");
+            res.json({ success: true, message: 'Business schedule updated successfully' });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } 
+    } catch (err) {
+        console.error(err);
+        req.flash("error_msg", "Error updating business schedule");
+        res.status(500).json({ success: false, message: 'Error updating business schedule' });
+    }
+});
+
+// Add staff member
+app.post('/admin/add-staff', checkBusinessAuthenticated, async (req, res) => {
+    try {
+        const { staffName, position } = req.body;
+        const businessId = req.user.id;
+
+        const result = await pool.query(
+            `INSERT INTO staff (business_id, name, position) 
+             VALUES ($1, $2, $3) 
+             RETURNING *`,
+            [businessId, staffName, position]
+        );
+
+        res.json({ success: true, staff: result.rows[0] });
+    } catch (error) {
+        console.error('Error adding staff:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error adding staff member' 
+        });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
